@@ -1,0 +1,17 @@
+[[permission]]
+identifier = "localnote"
+description = "Разрешает приватные операции записи, STT, анализа и локальной SQLite БД."
+commands.allow = [
+  "database_status",
+  "initialize_database",
+  "unlock_database",
+  "lock_database",
+  "push_audio_chunk",
+  "transcribe_pending_audio",
+  "analyze_transcript",
+  "save_session",
+  "list_sessions",
+  "clear_audio_buffer",
+  "get_default_settings",
+  "check_local_ai"
+]

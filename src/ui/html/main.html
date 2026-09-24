@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>LocalNote — локальный голосовой конспект</title>
+  <link rel="stylesheet" href="../styles/main.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">LN</div>
+        <div>
+          <strong>LocalNote</strong>
+          <span>private neural notes</span>
+        </div>
+      </div>
+
+      <div class="auto-mode-card">
+        <div class="auto-mode-icon">✦</div>
+        <div>
+          <strong>Автоопределение темы</strong>
+          <span>Физика · математика · инженерия · медицина · история · бизнес · любые другие области</span>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-title">
+          <span>Сессии</span>
+          <button id="refreshSessions" class="icon-btn" title="Обновить">↻</button>
+        </div>
+        <div id="sessionList" class="session-list">
+          <div class="empty-state">Разблокируйте хранилище, чтобы увидеть записи.</div>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div id="securityState" class="security-pill locked">
+          <span class="dot"></span>
+          <span id="securityText">Хранилище заблокировано</span>
+        </div>
+        <button id="lockBtn" class="secondary-btn hidden">Заблокировать</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">локальная обработка · без облака</div>
+          <h1 id="pageTitle">Универсальный голосовой конспект</h1>
+          <p id="pageSubtitle">Полная расшифровка сохраняется отдельно, а локальная нейросеть сама определяет тему и выделяет главное.</p>
+        </div>
+        <div class="top-actions">
+          <button id="checkAiBtn" class="secondary-btn">Проверить AI</button>
+        </div>
+      </header>
+
+      <section class="workspace">
+        <div class="capture-card">
+          <div class="capture-head">
+            <div>
+              <span class="mini-label">Контекст</span>
+              <input id="subjectInput" class="subject-input" maxlength="160"
+                     placeholder="Необязательно: физика / проект здания / приём пациента / совещание по бизнесу">
+            </div>
+            <span id="recordStatus" class="status-pill idle">Готово</span>
+          </div>
+
+          <div class="mic-zone">
+            <div id="waveform" class="waveform" aria-hidden="true">
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span>
+            </div>
+            <button id="recordBtn" class="record-orb" aria-label="Начать запись">
+              <span class="orb-inner">●</span>
+            </button>
+            <div id="timer" class="timer">00:00</div>
+            <div id="micHint" class="mic-hint">Нажмите, чтобы начать запись</div>
+          </div>
+
+          <div id="errorBox" class="error-box hidden"></div>
+
+          <div class="capture-foot">
+            <span>Аудио обрабатывается в оперативной памяти и не сохраняется в БД.</span>
+            <span id="sttState">STT: локальный</span>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <span class="mini-label">Источник</span>
+                <h2>Оригинальная расшифровка</h2>
+              </div>
+              <button id="copyTranscriptBtn" class="icon-btn">Копировать</button>
+            </div>
+            <div id="transcript" class="text-view transcript">После записи здесь будет полный текст разговора.</div>
+          </section>
+
+          <section class="panel highlight-panel">
+            <div class="panel-head">
+              <div>
+                <span class="mini-label">Локальная LLM</span>
+                <h2>Сжатый смысл</h2>
+              </div>
+              <span id="analysisState" class="state-text">ожидание</span>
+            </div>
+            <div id="summary" class="text-view">
+              <div class="placeholder-card">После остановки записи нейросеть сама определит область и соберёт краткий конспект.</div>
+            </div>
+          </section>
+        </div>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <span class="mini-label">AI-СТРУКТУРА</span>
+              <h2 id="importantTitle">Что важно по теме</h2>
+            </div>
+            <button id="saveBtn" class="primary-btn" disabled>Сохранить в зашифрованную БД</button>
+          </div>
+          <div id="importantGrid" class="analysis-stack">
+            <div class="placeholder-card">Здесь появятся динамические разделы по содержанию разговора.</div>
+          </div>
+        </section>
+      </section>
+
+      <footer class="privacy-footer">
+        <span>🔒 Данные хранятся локально</span>
+        <span>·</span>
+        <span>• STT и LLM разрешены только через loopback</span>
+        <span>·</span>
+        <span>• оригинал хранится отдельно от конспекта</span>
+      </footer>
+    </main>
+  </div>
+
+  <dialog id="vaultDialog" class="modal">
+    <form method="dialog" class="modal-card" id="vaultForm">
+      <div class="modal-kicker">локальное защищённое хранилище</div>
+      <h2 id="vaultTitle">Создайте пароль</h2>
+      <p id="vaultDescription">Текст и конспекты будут шифроваться AES-256-GCM. Пароль не сохраняется.</p>
+      <input id="vaultPassword" type="password" autocomplete="new-password" minlength="10"
+             placeholder="Минимум 10 символов" required>
+      <div id="vaultPassword2Wrap">
+        <input id="vaultPassword2" type="password" autocomplete="new-password"
+               minlength="10" placeholder="Повторите пароль">
+      </div>
+      <div id="vaultError" class="error-box hidden"></div>
+      <button class="primary-btn full" value="default" type="submit">Продолжить</button>
+    </form>
+  </dialog>
+
+  <dialog id="settingsDialog" class="modal">
+    <form method="dialog" class="modal-card wide" id="settingsForm">
+      <div class="modal-kicker">локальная нейросеть</div>
+      <h2>Подключение модели</h2>
+      <p>Разрешаются только loopback-адреса. Внешние API будут отклонены приложением.</p>
+
+      <label>STT endpoint
+        <input id="sttUrl" required>
+      </label>
+      <label>STT model
+        <input id="sttModel" required>
+      </label>
+      <label>LLM endpoint
+        <input id="llmUrl" required>
+      </label>
+      <label>LLM model
+        <input id="llmModel" required>
+      </label>
+
+      <div class="modal-actions">
+        <button type="button" id="cancelSettings" class="secondary-btn">Отмена</button>
+        <button type="submit" class="primary-btn">Применить</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="../../recorder-worklet.js"></script>
+  <script type="module" src="../js/main.js"></script>
+</body>
+</html>

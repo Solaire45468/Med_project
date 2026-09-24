@@ -1,0 +1,10 @@
+{
+  "identifier": "main-window",
+  "description": "Разрешает главному окну только команды LocalNote.",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "localnote"
+  ]
+}

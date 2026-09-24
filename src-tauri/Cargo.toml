@@ -1,0 +1,49 @@
+[package]
+name = "med-app"
+version = "0.3.5"
+description = "Приватный локальный голосовой конспект"
+authors = ["SanZero"]
+edition = "2021"
+
+[lib]
+name = "med_app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+[dependencies]
+llama-rs = { version = "0.23.1", default-features = false, features = ["cpu", "huggingface"] } 
+tauri = { version = "2.11.5", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "multipart", "rustls-tls"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+rusqlite = { version = "0.31", features = ["bundled"] }
+aes-gcm = "0.10"
+argon2 = "0.5"
+rand = "0.8"
+url = "2"
+thiserror = "2"
+zeroize = "1"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "abort"
+strip = true
+
+[target.aarch64-linux-android]
+rustflags = [
+    "-C", "link-arg=-landroid",
+    "-C", "link-arg=-llog",
+]
+
+[env]
+# Жестко прописываем флаги для bindgen и компилятора C++ для Android аарх64
+BINDGEN_EXTRA_CLANG_ARGS = "--target=aarch64-linux-android --sysroot=/home/kirill/Android/Sdk/ndk/29.0.13846066/toolchains/llvm/prebuilt/linux-x86_64/sysroot -D__ANDROID_API__=30"
+BINDGEN_EXTRA_CLANG_ARGS_aarch64_linux_android = "--target=aarch64-linux-android --sysroot=/home/kirill/Android/Sdk/ndk/29.0.13846066/toolchains/llvm/prebuilt/linux-x86_64/sysroot -D__ANDROID_API__=30"
+ANDROID_API_LEVEL = "30"
+CC_aarch64_linux_android = "/home/kirill/Android/Sdk/ndk/29.0.13846066/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android30-clang"
+CXX_aarch64_linux_android = "/home/kirill/Android/Sdk/ndk/29.0.13846066/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android30-clang++"
